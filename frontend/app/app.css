@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@plugin "daisyui/index.js";
+@plugin "@tailwindcss/typography";
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
