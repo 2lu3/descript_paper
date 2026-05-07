@@ -16,15 +16,32 @@ export async function action({ request }: Route.ActionArgs) {
     throw new Response("File is required", { status: 400 });
   }
 
-  const response = await fetch(`${env.BACKEND_API_BASE_URL}/upload`, {
+  const postResponse = await fetch(`${env.BACKEND_API_BASE_URL}/uploads`, {
     method: "POST",
-    body: formData,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      filename: file.name,
+      size: file.size,
+      content_type: file.type,
+    }),
   });
-  if (!response.ok) {
-    throw new Response("Failed to upload file", { status: response.status });
+
+  if (!postResponse.ok) {
+    throw new Response("Failed to upload file", { status: postResponse.status });
   }
-  const data = await response.json();
-  return redirect(`/progress/${data.id}`);
+  const uploadParam = await postResponse.json();
+  const uploadUrl = uploadParam.url;
+  const uploadKey = uploadParam.key;
+
+  const uploadResponse = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": file.type },
+    body: file,
+  });
+  if (!uploadResponse.ok) {
+    throw new Response("Failed to upload file", { status: uploadResponse.status });
+  }
+  return redirect(`/progress/${uploadKey}`);
 }
 
 export default function Home() {
